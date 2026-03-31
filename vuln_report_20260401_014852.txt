@@ -1,0 +1,8 @@
+=== Vulnerability Scan Report ===
+
+SQL Injection: Not Vulnerable
+XSS: Not Vulnerable
+
+Details:
+
+Scan Completed Successfully
