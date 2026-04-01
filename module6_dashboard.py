@@ -13,8 +13,6 @@ DB_FILE = "logs.db"
 # ==============================
 st.set_page_config(page_title="SOC Dashboard", layout="wide")
 
-
-
 # ==============================
 # BEIGE UI
 # ==============================
@@ -274,30 +272,44 @@ if st.button("🔍 Scan Website"):
         st.warning("Please enter a valid URL")
 
 st.divider()
+
+# ==============================
+# SECURE FILE TRANSFER (FIXED)
+# ==============================
 st.subheader("🔐 Secure File Transfer")
 
-uploaded_file = st.file_uploader("Upload a file for encryption")
+uploaded_file = st.file_uploader("Upload a file for encryption", key="enc")
 
 if uploaded_file:
     file_data = uploaded_file.read()
 
-    key = generate_key()
+    # Generate key ONLY once per upload
+    if "enc_key" not in st.session_state:
+        st.session_state.enc_key = generate_key()
+
+    key = st.session_state.enc_key
 
     encrypted_data = encrypt_file(file_data, key)
 
     st.success("File Encrypted Successfully 🔐")
 
+
     st.download_button(
         label="Download Encrypted File",
         data=encrypted_data,
-        file_name="encrypted_file.enc"
+        file_name="encrypted_file.enc",
+        mime="application/octet-stream"
     )
 
+    # Show key
     st.info(f"Encryption Key (Save this!): {key.decode()}")
 
-    st.subheader("🔓 Decrypt File")
+# ==============================
+# DECRYPT FILE
+# ==============================
+st.subheader("🔓 Decrypt File")
 
-decrypt_file_upload = st.file_uploader("Upload encrypted file", key="decrypt")
+decrypt_file_upload = st.file_uploader("Upload encrypted file", key="dec")
 
 user_key = st.text_input("Enter encryption key")
 
@@ -307,15 +319,17 @@ if decrypt_file_upload and user_key:
     try:
         decrypted_data = decrypt_file(encrypted_data, user_key.encode())
 
-        st.success("File Decrypted Successfully")
+        st.success("File Decrypted Successfully ✅")
 
         st.download_button(
             label="Download Decrypted File",
             data=decrypted_data,
-            file_name="decrypted_file"
+            file_name="decrypted_file",
+            mime="application/octet-stream"
         )
-    except:
-        st.error("Invalid key or file")
+
+    except Exception:
+        st.error("❌ Invalid key or file")
 
 st.divider()        
 
@@ -332,5 +346,4 @@ st.divider()
 # FOOTER
 # ==============================
 st.caption("Developed for Cyber Security Project • SOC Simulation")
-time.sleep(5)
-st.rerun()
+
